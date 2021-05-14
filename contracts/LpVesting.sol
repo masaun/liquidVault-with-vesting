@@ -20,6 +20,12 @@ contract LpVesting {
 
     uint REWARD_TOKEN_AMOUNT_TO_BE_SUPPLED = 1e6 * 1e18;  // Reward tokens amount to be supplied is 6000000
 
+    struct StakeData {
+        IUniswapV2Pair lpToken;
+        address staker;
+        uint stakeAmount;
+    }
+    mapping (address => StakeData) stakeDatas;
 
     constructor(IERC20 _dgvc) public {
          dgvc = _dgvc;
@@ -49,6 +55,16 @@ contract LpVesting {
         address staker = msg.sender;
         uint stakeAmount = lpToken.balanceOf(staker);
         lpToken.transferFrom(staker, address(this), stakeAmount);
+
+        // Save stake data of a staker
+        _stake(lpToken, staker, stakeAmount);
+    }
+
+    function _stake(IUniswapV2Pair _lpToken, address _staker, uint _stakeAmount) internal returns (bool) {
+        StakeData storage stakeData = stakeDatas[_staker];
+        stakeData.lpToken = _lpToken;
+        stakeData.staker = _staker;
+        stakeData.stakeAmount = _stakeAmount;      
     }
 
     /**

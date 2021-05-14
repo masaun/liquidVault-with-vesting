@@ -16,7 +16,7 @@ import { UniswapV2Library } from './rock3t/UniswapV2Library.sol';
 import { ABDKMathQuad } from 'abdk-libraries-solidity/ABDKMathQuad.sol';
 import { PriceOracle } from './rock3t/PriceOracle.sol';
 
-//contract LiquidVaultWithVesting is Ownable {
+
 contract LiquidVaultWithVesting is Ownable, LpVesting {
     using SafeMath for uint;
     using ABDKMathQuad for bytes16;
