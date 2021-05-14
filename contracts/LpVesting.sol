@@ -21,7 +21,7 @@ contract LpVesting {
     //uint public REWARD_TOKEN_AMOUNT_TO_BE_SUPPLED = 1e6 * 1e18;  // Reward tokens amount to be supplied is 6000000
 
     uint public totalStakingAmount;               // amount
-    uint public totalRewardsAmount = 1e6 * 1e18;  // Reward tokens amount to be supplied is 6000000
+    uint public totalRewardAmount = 1e6 * 1e18;   // Reward tokens amount to be supplied is 6000000
     uint public lastUpdated;
 
     struct StakeData {
@@ -93,19 +93,23 @@ contract LpVesting {
         totalStakingAmount.sub(unstakeAmount);
 
         // Distribute reward tokens
-        claimRewards(staker);
+        uint _startTimeOfStaking = stakeData.startTimeOfStaking;
+        claimRewards(staker, _startTimeOfStaking);
     }
 
     /**
      * @notice - Claim reward tokens (DGVC tokens)
      * @notice - Vesting period is same for all stakers
      */
-    function claimRewards(address receiver) public returns (bool) {
-        // [Formula of reward]: Total reward amount * distribution rate (per second) * Share of staked LPs * staked-seconds
+    function claimRewards(address receiver, uint startTimeOfStaking) public returns (bool) {
+        // [Formula of reward]: Total reward amount * Share of staked LPs * staked-seconds
+        uint rewardAmountPerSecond = getRewardAmountPerSecond();
+        uint totalStakingTime = block.timestamp.sub(startTimeOfStaking);
+        uint stakingShare = getStakingShare(receiver);
+        uint distributedRewardAmount = rewardAmountPerSecond.mul(startTimeOfStaking).mul(stakingShare).div(100);
 
-        // [Todo]: Add a logic to distribute reward tokens (DGVC tokens)
-        uint distributedAmount;
-        dgvc.transfer(receiver, distributedAmount);
+        // Distribute reward tokens (DGVC tokens)
+        dgvc.transfer(receiver, distributedRewardAmount);
     }
     
 
@@ -115,13 +119,16 @@ contract LpVesting {
     function getVestingPeriod() public view returns (uint _vestingPeriod) {
         return VESTING_PERIOD;
     }
-    
+
     function getStakingShare(address staker) public view returns (uint _stakingShare) {
         StakeData memory stakeData = stakeDatas[staker];
         uint stakedAmount = stakeData.stakeAmount;
         uint stakingShare = stakedAmount.mul(100).div(totalStakingAmount);
         return stakingShare; // Unit is percentage (%)
     }
-    
+
+    function getRewardAmountPerSecond() public view returns (uint _rewardAmountPerSecond) {
+        return totalRewardAmount.div(VESTING_PERIOD);  // Reward amount per second
+    }
     
 }
