@@ -2,23 +2,28 @@
 pragma solidity ^0.7.1;
 pragma experimental ABIEncoderV2;
 
+import { SafeMath } from '@openzeppelin/contracts/math/SafeMath.sol';
 import { IERC20 } from '@openzeppelin/contracts/token/ERC20/IERC20.sol';  // ROCK3T token
 import { IUniswapV2Pair } from '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
-//import { LiquidVault } from "./rock3t/LiquidVault.sol";
 
 /**
  * @notice - This contract has a role that yield farming and vesting for LPs
  * @notice - DGVC tokens are distributed as rewards
  */
 contract LpVesting {
+    using SafeMath for uint;
 
     IERC20 public dgvc;   // DGVC token
-    address DGVC;         // DGVC token (contract address)
+    address public DGVC;         // DGVC token (contract address)
 
-    uint VESTING_PERIOD;
-    uint DEFAULT_VESTING_PERIOD = 24 weeks;  // Default vesting period is 6 months
+    uint public VESTING_PERIOD;
+    uint public DEFAULT_VESTING_PERIOD = 24 weeks;  // Default vesting period is 6 months
+    uint public REWARD_TOKEN_AMOUNT_TO_BE_SUPPLED = 1e6 * 1e18;  // Reward tokens amount to be supplied is 6000000
 
-    uint REWARD_TOKEN_AMOUNT_TO_BE_SUPPLED = 1e6 * 1e18;  // Reward tokens amount to be supplied is 6000000
+    uint public totalStakingAmount;        // amount
+    //uint public totalRewards;
+    //uint public totalStakingShareSeconds;  // second
+    uint public lastUpdated;
 
     struct StakeData {
         IUniswapV2Pair lpToken;
@@ -64,7 +69,10 @@ contract LpVesting {
         StakeData storage stakeData = stakeDatas[_staker];
         stakeData.lpToken = _lpToken;
         stakeData.staker = _staker;
-        stakeData.stakeAmount = _stakeAmount;      
+        stakeData.stakeAmount = _stakeAmount;
+
+        // Update total staking amount
+        totalStakingAmount.add(_stakeAmount);
     }
 
     /**
@@ -80,6 +88,9 @@ contract LpVesting {
         uint unstakeAmount = stakeData.stakeAmount;
         lpToken.transfer(staker, unstakeAmount);
 
+        // Update total staking amount
+        totalStakingAmount.sub(unstakeAmount);
+
         // Distribute reward tokens
         claimRewards(staker);
     }
@@ -89,6 +100,8 @@ contract LpVesting {
      * @notice - Vesting period is same for all stakers
      */
     function claimRewards(address receiver) public returns (bool) {
+        // [Formula of reward]: Total reward amount * distribution rate (per second) * Share of staked LPs * staked-seconds
+
         // [Todo]: Add a logic to distribute reward tokens (DGVC tokens)
         uint distributedAmount;
         dgvc.transfer(receiver, distributedAmount);
@@ -102,6 +115,12 @@ contract LpVesting {
         return VESTING_PERIOD;
     }
     
-
+    function getStakingShare(address staker) public view returns (uint _stakingShare) {
+        StakeData memory stakeData = stakeDatas[staker];
+        uint stakedAmount = stakeData.stakeAmount;
+        uint stakingShare = stakedAmount.mul(100).div(totalStakingAmount);
+        return stakingShare; // Unit is percentage (%)
+    }
+    
     
 }
