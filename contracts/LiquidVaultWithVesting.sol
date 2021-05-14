@@ -2,7 +2,7 @@
 pragma solidity ^0.7.1;
 pragma experimental ABIEncoderV2;
 
-//import { LpVesting } from "./LpVesting.sol";
+import { LpVesting } from "./LpVesting.sol";
 
 import { Ownable } from '@openzeppelin/contracts/access/Ownable.sol';
 import { SafeMath } from '@openzeppelin/contracts/math/SafeMath.sol';
@@ -16,8 +16,8 @@ import { UniswapV2Library } from './rock3t/UniswapV2Library.sol';
 import { ABDKMathQuad } from 'abdk-libraries-solidity/ABDKMathQuad.sol';
 import { PriceOracle } from './rock3t/PriceOracle.sol';
 
-contract LiquidVaultWithVesting is Ownable {
-//contract LiquidVaultWithVesting is Ownable, LpVesting {
+
+contract LiquidVaultWithVesting is Ownable, LpVesting {
     using SafeMath for uint;
     using ABDKMathQuad for bytes16;
 
@@ -100,7 +100,7 @@ contract LiquidVaultWithVesting is Ownable {
         uint lockPeriod
     );
 
-    constructor() {
+    constructor(IERC20 _dgvc) public LpVesting(_dgvc) {  // [Note]: Assign DGVC token contract address into LpVesting
         calibrate(
             0xbfcb59e05f1e2674d208f2461d9cb64e, // a = -3e-16
             0x3fde33dcfe54a3802b3e313af8e0e525, // b = 1.4e-10

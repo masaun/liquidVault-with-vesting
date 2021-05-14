@@ -2,38 +2,47 @@
 pragma solidity ^0.7.1;
 pragma experimental ABIEncoderV2;
 
+import { SafeMath } from '@openzeppelin/contracts/math/SafeMath.sol';
 import { IERC20 } from '@openzeppelin/contracts/token/ERC20/IERC20.sol';  // ROCK3T token
 import { IUniswapV2Pair } from '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
-import { LiquidVault } from "./rock3t/LiquidVault.sol";
 
 /**
  * @notice - This contract has a role that yield farming and vesting for LPs
+ * @notice - DGVC tokens are distributed as rewards
  */
 contract LpVesting {
+    using SafeMath for uint;
 
-    LiquidVault public liquidVault;
-    IERC20 public r3t;  // ROCK3T token
-    address LIQUID_VAULT;
-    address R3T;
+    IERC20 public dgvc;   // DGVC token
+    address public DGVC;         // DGVC token (contract address)
 
-    uint VESTING_PERIOD;
-    uint DEFAULT_VESTING_PERIOD = 24 weeks;  // Default vesting period is 6 months
+    uint public VESTING_PERIOD;
+    uint public DEFAULT_VESTING_PERIOD = 24 weeks;  // Default vesting period is 6 months
+    //uint public REWARD_TOKEN_AMOUNT_TO_BE_SUPPLED = 1e6 * 1e18;  // Reward tokens amount to be supplied is 6000000
 
-    uint REWARD_TOKEN_AMOUNT_TO_BE_SUPPLED = 1e6 * 1e18;  // Reward tokens amount to be supplied is 6000000
+    uint public totalStakingAmount;               // amount
+    uint public totalRewardAmount = 1e6 * 1e18;   // Reward tokens amount to be supplied is 6000000
+    uint public lastUpdated;
 
-    constructor(LiquidVault _liquidVault, IERC20 _r3t) public {
-        liquidVault = _liquidVault;
-        r3t = _r3t;
+    struct StakeData {
+        IUniswapV2Pair lpToken;
+        address staker;
+        uint stakeAmount;
+        uint startTimeOfStaking;  // Timestamp when a user staked
+    }
+    mapping (address => StakeData) stakeDatas;
 
-        LIQUID_VAULT = address(liquidVault);
-        R3T = address (r3t);
+    constructor(IERC20 _dgvc) public {
+         dgvc = _dgvc;
+         DGVC = address(dgvc);
     }
 
     /**
-     * @notice - Deposit reward tokens (ROCK3T (R3T)) by a Rocket3T project owner
+     * @notice - Deposit reward tokens (DGVC tokens) by a Rocket3T project owner
      */
-    function depositRewardToken() public returns (bool) {
-        // [Todo]: TransferFrom of RewardToken
+    function depositRewardToken(uint depositAmount) public returns (bool) {
+        address projectOwner = msg.sender;
+        dgvc.transferFrom(projectOwner, address(this), depositAmount);
     }
 
     function setVestingPeriod() public returns (bool) {
@@ -51,6 +60,20 @@ contract LpVesting {
         address staker = msg.sender;
         uint stakeAmount = lpToken.balanceOf(staker);
         lpToken.transferFrom(staker, address(this), stakeAmount);
+
+        // Save stake data of a staker
+        _stake(lpToken, staker, stakeAmount);
+    }
+
+    function _stake(IUniswapV2Pair _lpToken, address _staker, uint _stakeAmount) internal returns (bool) {
+        StakeData storage stakeData = stakeDatas[_staker];
+        stakeData.lpToken = _lpToken;
+        stakeData.staker = _staker;
+        stakeData.stakeAmount = _stakeAmount;
+        stakeData.startTimeOfStaking = block.timestamp;
+
+        // Update total staking amount
+        totalStakingAmount.add(_stakeAmount);
     }
 
     /**
@@ -59,23 +82,34 @@ contract LpVesting {
     function unstake(IUniswapV2Pair lpToken) public returns (bool) {
         require (block.timestamp < VESTING_PERIOD, "It has not passed the vesting period");
 
-        // Unstake
         address staker = msg.sender;
-        uint unstakeAmount;  // [Todo]: Call from the UserStakeData struct
+        StakeData memory stakeData = stakeDatas[staker];
+
+        // Unstake
+        uint unstakeAmount = stakeData.stakeAmount;
         lpToken.transfer(staker, unstakeAmount);
 
+        // Update total staking amount
+        totalStakingAmount.sub(unstakeAmount);
+
         // Distribute reward tokens
-        claimRewards(staker);
+        uint _startTimeOfStaking = stakeData.startTimeOfStaking;
+        claimRewards(staker, _startTimeOfStaking);
     }
 
     /**
-     * @notice - Claim reward tokens (RocketToken)
+     * @notice - Claim reward tokens (DGVC tokens)
      * @notice - Vesting period is same for all stakers
      */
-    function claimRewards(address receiver) public returns (bool) {
-        // [Todo]: Add a logic to distribute reward tokens (ROCK3T token)
-        uint distributedAmount;
-        r3t.transfer(receiver, distributedAmount);
+    function claimRewards(address receiver, uint startTimeOfStaking) public returns (bool) {
+        // [Formula of reward]: Total reward amount * Share of staked LPs * staked-seconds
+        uint rewardAmountPerSecond = getRewardAmountPerSecond();
+        uint totalStakingTime = block.timestamp.sub(startTimeOfStaking);
+        uint stakingShare = getStakingShare(receiver);
+        uint distributedRewardAmount = rewardAmountPerSecond.mul(startTimeOfStaking).mul(stakingShare).div(100);
+
+        // Distribute reward tokens (DGVC tokens)
+        dgvc.transfer(receiver, distributedRewardAmount);
     }
     
 
@@ -85,7 +119,16 @@ contract LpVesting {
     function getVestingPeriod() public view returns (uint _vestingPeriod) {
         return VESTING_PERIOD;
     }
-    
 
+    function getStakingShare(address staker) public view returns (uint _stakingShare) {
+        StakeData memory stakeData = stakeDatas[staker];
+        uint stakedAmount = stakeData.stakeAmount;
+        uint stakingShare = stakedAmount.mul(100).div(totalStakingAmount);
+        return stakingShare; // Unit is percentage (%)
+    }
+
+    function getRewardAmountPerSecond() public view returns (uint _rewardAmountPerSecond) {
+        return totalRewardAmount.div(VESTING_PERIOD);  // Reward amount per second
+    }
     
 }
