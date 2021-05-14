@@ -29,8 +29,9 @@ contract LpVesting {
     /**
      * @notice - Deposit reward tokens (DGVC tokens) by a Rocket3T project owner
      */
-    function depositRewardToken() public returns (bool) {
-        // [Todo]: TransferFrom of RewardToken
+    function depositRewardToken(uint depositAmount) public returns (bool) {
+        address projectOwner = msg.sender;
+        dgvc.transferFrom(projectOwner, address(this), depositAmount);
     }
 
     function setVestingPeriod() public returns (bool) {
