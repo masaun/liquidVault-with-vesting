@@ -18,17 +18,17 @@ contract LpVesting {
 
     uint public VESTING_PERIOD;
     uint public DEFAULT_VESTING_PERIOD = 24 weeks;  // Default vesting period is 6 months
-    uint public REWARD_TOKEN_AMOUNT_TO_BE_SUPPLED = 1e6 * 1e18;  // Reward tokens amount to be supplied is 6000000
+    //uint public REWARD_TOKEN_AMOUNT_TO_BE_SUPPLED = 1e6 * 1e18;  // Reward tokens amount to be supplied is 6000000
 
-    uint public totalStakingAmount;        // amount
-    //uint public totalRewards;
-    //uint public totalStakingShareSeconds;  // second
+    uint public totalStakingAmount;               // amount
+    uint public totalRewardsAmount = 1e6 * 1e18;  // Reward tokens amount to be supplied is 6000000
     uint public lastUpdated;
 
     struct StakeData {
         IUniswapV2Pair lpToken;
         address staker;
         uint stakeAmount;
+        uint startTimeOfStaking;  // Timestamp when a user staked
     }
     mapping (address => StakeData) stakeDatas;
 
@@ -70,6 +70,7 @@ contract LpVesting {
         stakeData.lpToken = _lpToken;
         stakeData.staker = _staker;
         stakeData.stakeAmount = _stakeAmount;
+        stakeData.startTimeOfStaking = block.timestamp;
 
         // Update total staking amount
         totalStakingAmount.add(_stakeAmount);
