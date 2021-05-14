@@ -4,22 +4,29 @@ pragma experimental ABIEncoderV2;
 
 import { IERC20 } from '@openzeppelin/contracts/token/ERC20/IERC20.sol';  // ROCK3T token
 import { IUniswapV2Pair } from '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
-
+import { LiquidVault } from "./rock3t/LiquidVault.sol";
 
 /**
  * @notice - This contract has a role that yield farming and vesting for LPs
  */
 contract LpVesting {
 
+    LiquidVault public liquidVault;
+    IERC20 public r3t;  // ROCK3T token
+    address LIQUID_VAULT;
+    address R3T;
+
     uint VESTING_PERIOD;
     uint DEFAULT_VESTING_PERIOD = 24 weeks;  // Default vesting period is 6 months
 
     uint REWARD_TOKEN_AMOUNT_TO_BE_SUPPLED = 1e6 * 1e18;  // Reward tokens amount to be supplied is 6000000
 
-    IERC20 public r3t;  // ROCK3T token
-
-    constructor(IERC20 _r3t) public {
+    constructor(LiquidVault _liquidVault, IERC20 _r3t) public {
+        liquidVault = _liquidVault;
         r3t = _r3t;
+
+        LIQUID_VAULT = address(liquidVault);
+        R3T = address (r3t);
     }
 
     /**
@@ -66,7 +73,7 @@ contract LpVesting {
      * @notice - Vesting period is same for all stakers
      */
     function claimRewards(address receiver) public returns (bool) {
-        // [Todo]: Add a logic to distribute reward tokens
+        // [Todo]: Add a logic to distribute reward tokens (ROCK3T token)
         uint distributedAmount;
         r3t.transfer(receiver, distributedAmount);
     }
