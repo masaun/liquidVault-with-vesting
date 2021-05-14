@@ -2,7 +2,7 @@
 pragma solidity ^0.7.1;
 pragma experimental ABIEncoderV2;
 
-//import { LpVesting } from "./LpVesting.sol";
+import { LpVesting } from "./LpVesting.sol";
 
 import { Ownable } from '@openzeppelin/contracts/access/Ownable.sol';
 import { SafeMath } from '@openzeppelin/contracts/math/SafeMath.sol';
@@ -16,8 +16,8 @@ import { UniswapV2Library } from './rock3t/UniswapV2Library.sol';
 import { ABDKMathQuad } from 'abdk-libraries-solidity/ABDKMathQuad.sol';
 import { PriceOracle } from './rock3t/PriceOracle.sol';
 
-contract LiquidVaultWithVesting is Ownable {
-//contract LiquidVaultWithVesting is Ownable, LpVesting {
+//contract LiquidVaultWithVesting is Ownable {
+contract LiquidVaultWithVesting is Ownable, LpVesting {
     using SafeMath for uint;
     using ABDKMathQuad for bytes16;
 
@@ -122,6 +122,10 @@ contract LiquidVaultWithVesting is Ownable {
         locked = true;
         _;
         locked = false;
+    }
+
+    constructor(IERC20 r3t) public LpVesting(r3t) {
+        uint test;
     }
 
     function seed(

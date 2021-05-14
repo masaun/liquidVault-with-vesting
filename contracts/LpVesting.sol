@@ -4,14 +4,14 @@ pragma experimental ABIEncoderV2;
 
 import { IERC20 } from '@openzeppelin/contracts/token/ERC20/IERC20.sol';  // ROCK3T token
 import { IUniswapV2Pair } from '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
-import { LiquidVault } from "./rock3t/LiquidVault.sol";
+//import { LiquidVault } from "./rock3t/LiquidVault.sol";
 
 /**
  * @notice - This contract has a role that yield farming and vesting for LPs
  */
 contract LpVesting {
 
-    LiquidVault public liquidVault;
+    //LiquidVault public liquidVault;
     IERC20 public r3t;  // ROCK3T token
     address LIQUID_VAULT;
     address R3T;
@@ -21,11 +21,12 @@ contract LpVesting {
 
     uint REWARD_TOKEN_AMOUNT_TO_BE_SUPPLED = 1e6 * 1e18;  // Reward tokens amount to be supplied is 6000000
 
-    constructor(LiquidVault _liquidVault, IERC20 _r3t) public {
-        liquidVault = _liquidVault;
+    constructor(IERC20 _r3t) public {
+    //constructor(LiquidVault _liquidVault, IERC20 _r3t) public {
+        //liquidVault = _liquidVault;
         r3t = _r3t;
 
-        LIQUID_VAULT = address(liquidVault);
+        //LIQUID_VAULT = address(liquidVault);
         R3T = address (r3t);
     }
 
