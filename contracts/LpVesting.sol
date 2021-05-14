@@ -8,30 +8,26 @@ import { IUniswapV2Pair } from '@uniswap/v2-core/contracts/interfaces/IUniswapV2
 
 /**
  * @notice - This contract has a role that yield farming and vesting for LPs
+ * @notice - DGVC tokens are distributed as rewards
  */
 contract LpVesting {
 
-    //LiquidVault public liquidVault;
-    IERC20 public r3t;  // ROCK3T token
-    address LIQUID_VAULT;
-    address R3T;
+    IERC20 public dgvc;   // DGVC token
+    address DGVC;         // DGVC token (contract address)
 
     uint VESTING_PERIOD;
     uint DEFAULT_VESTING_PERIOD = 24 weeks;  // Default vesting period is 6 months
 
     uint REWARD_TOKEN_AMOUNT_TO_BE_SUPPLED = 1e6 * 1e18;  // Reward tokens amount to be supplied is 6000000
 
-    constructor(IERC20 _r3t) public {
-    //constructor(LiquidVault _liquidVault, IERC20 _r3t) public {
-        //liquidVault = _liquidVault;
-        r3t = _r3t;
 
-        //LIQUID_VAULT = address(liquidVault);
-        R3T = address (r3t);
+    constructor(IERC20 _dgvc) public {
+         dgvc = _dgvc;
+         DGVC = address(dgvc);
     }
 
     /**
-     * @notice - Deposit reward tokens (ROCK3T (R3T)) by a Rocket3T project owner
+     * @notice - Deposit reward tokens (DGVC tokens) by a Rocket3T project owner
      */
     function depositRewardToken() public returns (bool) {
         // [Todo]: TransferFrom of RewardToken
@@ -70,13 +66,13 @@ contract LpVesting {
     }
 
     /**
-     * @notice - Claim reward tokens (RocketToken)
+     * @notice - Claim reward tokens (DGVC tokens)
      * @notice - Vesting period is same for all stakers
      */
     function claimRewards(address receiver) public returns (bool) {
-        // [Todo]: Add a logic to distribute reward tokens (ROCK3T token)
+        // [Todo]: Add a logic to distribute reward tokens (DGVC tokens)
         uint distributedAmount;
-        r3t.transfer(receiver, distributedAmount);
+        dgvc.transfer(receiver, distributedAmount);
     }
     
 

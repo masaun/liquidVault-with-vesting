@@ -100,7 +100,7 @@ contract LiquidVaultWithVesting is Ownable, LpVesting {
         uint lockPeriod
     );
 
-    constructor() {
+    constructor(IERC20 _dgvc) public LpVesting(_dgvc) {  // [Note]: Assign DGVC token contract address into LpVesting
         calibrate(
             0xbfcb59e05f1e2674d208f2461d9cb64e, // a = -3e-16
             0x3fde33dcfe54a3802b3e313af8e0e525, // b = 1.4e-10
@@ -122,10 +122,6 @@ contract LiquidVaultWithVesting is Ownable, LpVesting {
         locked = true;
         _;
         locked = false;
-    }
-
-    constructor(IERC20 r3t) public LpVesting(r3t) {
-        uint test;
     }
 
     function seed(
