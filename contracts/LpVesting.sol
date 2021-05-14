@@ -10,17 +10,26 @@ contract LpVesting {
     uint VESTING_PERIOD;
     uint DEFAULT_VESTING_PERIOD = 24 weeks;  // Default vesting period is 6 months
 
-    constructor() public {
-        VESTING_PERIOD = DEFAULT_VESTING_PERIOD;
+    constructor() public {}
+
+    function setVestingPeriod() public returns (bool) {
+        VESTING_PERIOD = now + DEFAULT_VESTING_PERIOD;   
     }
 
-    function updateVestingPeriod(uint newVestingPeriod) public returns (bool) {
-        VESTING_PERIOD = newVestingPeriod;
-    }
+    // function updateVestingPeriod(uint newVestingPeriod) public returns (bool) {
+    //     VESTING_PERIOD = newVestingPeriod;
+    // }
 
     function stake() public returns (bool) {}
 
-    function unstake() public returns (bool) {}
+    function unstake() public returns (bool) {
+
+        require (msg.value > 0);
+        
+    }
+
+    function claimRewards() public returns (bool) {}
+    
 
     //-----------
     // Getter
