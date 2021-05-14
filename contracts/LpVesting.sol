@@ -13,7 +13,7 @@ contract LpVesting {
     constructor() public {}
 
     function setVestingPeriod() public returns (bool) {
-        VESTING_PERIOD = now + DEFAULT_VESTING_PERIOD;   
+        VESTING_PERIOD = block.timestamp + DEFAULT_VESTING_PERIOD;   
     }
 
     // function updateVestingPeriod(uint newVestingPeriod) public returns (bool) {
@@ -23,11 +23,12 @@ contract LpVesting {
     function stake() public returns (bool) {}
 
     function unstake() public returns (bool) {
-
-        require (msg.value > 0);
-        
+        require (block.timestamp < VESTING_PERIOD, "It has not passed the vesting period");
     }
 
+    /**
+     * @notice - Claim reward tokens (RocketToken)
+     */
     function claimRewards() public returns (bool) {}
     
 
