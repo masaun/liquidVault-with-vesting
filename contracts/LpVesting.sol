@@ -102,7 +102,7 @@ contract LpVesting {
      * @notice - Vesting period is same for all stakers
      */
     function claimRewards(address receiver, uint startTimeOfStaking) public returns (bool) {
-        // [Formula of reward]: Total reward amount * Share of staked LPs * staked-seconds
+        // [Formula of reward]: Total reward amount * Share of staked-LPs (%) * Total staking time (seconds)
         uint rewardAmountPerSecond = getRewardAmountPerSecond();
         uint totalStakingTime = block.timestamp.sub(startTimeOfStaking);
         uint stakingShare = getStakingShare(receiver);
