@@ -73,9 +73,11 @@ contract LpVesting {
     function unstake(IUniswapV2Pair lpToken) public returns (bool) {
         require (block.timestamp < VESTING_PERIOD, "It has not passed the vesting period");
 
-        // Unstake
         address staker = msg.sender;
-        uint unstakeAmount;  // [Todo]: Call from the UserStakeData struct
+        StakeData memory stakeData = stakeDatas[staker];
+
+        // Unstake
+        uint unstakeAmount = stakeData.stakeAmount;
         lpToken.transfer(staker, unstakeAmount);
 
         // Distribute reward tokens
