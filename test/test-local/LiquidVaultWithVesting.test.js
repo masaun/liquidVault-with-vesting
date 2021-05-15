@@ -406,7 +406,7 @@ contract('LiquidVaultWithVesting', function(accounts) {
           ///----------------------------------------------------------------
           //const LP_TOKEN = uniswapPair   /// LP token (ROCK3T - ETH pair)
           let txReceipt6 = await liquidVault.unstake(LP_TOKEN, { from: OWNER })
-
+          console.log('=== txReceipt6 (unstake) ===', String(txReceipt6))
       });
 
       it('Check status before staking', async () => {

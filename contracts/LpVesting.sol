@@ -95,7 +95,8 @@ contract LpVesting {
         lpToken.transfer(staker, unstakeAmount);
 
         // Update total staking amount
-        totalStakedAmount.sub(unstakeAmount);
+        totalStakedAmount -= unstakeAmount;
+        //totalStakedAmount.sub(unstakeAmount);
 
         // Distribute reward tokens
         uint _startTimeOfStaking = stakeData.startTimeOfStaking;
@@ -111,7 +112,7 @@ contract LpVesting {
         uint rewardAmountPerSecond = getRewardAmountPerSecond();
         uint totalStakingTime = block.timestamp.sub(startTimeOfStaking);
         uint stakingShare = getStakingShare(receiver);
-        uint distributedRewardAmount = rewardAmountPerSecond.mul(startTimeOfStaking).mul(stakingShare).div(100);
+        uint distributedRewardAmount = rewardAmountPerSecond.mul(totalStakingTime).mul(stakingShare).div(100);
 
         // Distribute reward tokens (DGVC tokens)
         dgvc.transfer(receiver, distributedRewardAmount);
