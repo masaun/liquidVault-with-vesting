@@ -20,7 +20,7 @@ contract LpVesting {
     uint public DEFAULT_VESTING_PERIOD = 24 weeks;  // Default vesting period is 6 months
     //uint public REWARD_TOKEN_AMOUNT_TO_BE_SUPPLED = 1e6 * 1e18;  // Reward tokens amount to be supplied is 6000000
 
-    uint public totalStakingAmount;               // amount
+    uint public totalStakedAmount;               // amount
     uint public totalRewardAmount;
     uint public lastUpdated;
 
@@ -76,7 +76,7 @@ contract LpVesting {
         stakeData.startTimeOfStaking = block.timestamp;
 
         // Update total staking amount
-        totalStakingAmount.add(_stakeAmount);
+        totalStakedAmount += _stakeAmount;
     }
 
     /**
@@ -93,7 +93,7 @@ contract LpVesting {
         lpToken.transfer(staker, unstakeAmount);
 
         // Update total staking amount
-        totalStakingAmount.sub(unstakeAmount);
+        totalStakedAmount.sub(unstakeAmount);
 
         // Distribute reward tokens
         uint _startTimeOfStaking = stakeData.startTimeOfStaking;
@@ -124,9 +124,10 @@ contract LpVesting {
     }
 
     function getStakingShare(address staker) public view returns (uint _stakingShare) {
-        StakeData memory stakeData = stakeDatas[staker];
+        StakeData memory stakeData = getStakeData(staker);
         uint stakedAmount = stakeData.stakeAmount;
-        uint stakingShare = stakedAmount.mul(100).div(totalStakingAmount);
+        uint stakingShare = stakedAmount.mul(1e18).div(totalStakedAmount);
+        //uint stakingShare = stakedAmount.mul(100).div(totalStakedAmount);   // Original
         return stakingShare; // Unit is percentage (%)
     }
 

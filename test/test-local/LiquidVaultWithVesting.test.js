@@ -364,18 +364,18 @@ contract('LiquidVaultWithVesting', function(accounts) {
           /// Set the vesting period (24 weeks) of LP
           ///----------------------------------------------------------------
           let txReceipt3 = await liquidVault.setVestingPeriod({ from: OWNER })
-          console.log('=== txReceipt3 (setVestingPeriod) ===', txReceipt3)
+          //console.log('=== txReceipt3 (setVestingPeriod) ===', txReceipt3)
 
           ///----------------------------------------------------------------
           /// Stake LPs into the LiquidVault for the vesting period (※ All LPs which user hold are staked)
           ///----------------------------------------------------------------
           const lpBalance = await lpToken.balanceOf(OWNER);
-          console.log('=== lpBalance (of owner) ===', String(lpBalance))
+          //console.log('=== lpBalance (of owner) ===', String(lpBalance))
 
           const LP_TOKEN = lpToken.address  /// LP token (ROCK3T - ETH pair)
           let txReceipt4 = await lpToken.approve(liquidVault.address, lpBalance, { from: OWNER })
           let txReceipt5 = await liquidVault.stake(LP_TOKEN, { from: OWNER })
-          console.log('=== txReceipt4 (stake) ===', txReceipt4)
+          //console.log('=== txReceipt4 (stake) ===', txReceipt4)
 
           ///----------------------------------------------------------------
           /// Time goes to 25 week ahead (by using openzeppelin-test-helper)
@@ -393,8 +393,11 @@ contract('LiquidVaultWithVesting', function(accounts) {
           const startTimeOfStaking = await liquidVault.getStartTimeOfStaking(receiver)
           console.log('=== startTimeOfStaking ===', String(startTimeOfStaking))        
 
-          let distributedRewardAmount = await liquidVault.getDistributedRewardAmount(receiver, startTimeOfStaking, { from: OWNER })
-          console.log('=== distributedRewardAmount ===', distributedRewardAmount)
+          const stakingShare = await liquidVault.getStakingShare(receiver)
+          console.log('=== stakingShare ===', String(stakingShare))    /// [Todo]: Error
+
+          const distributedRewardAmount = await liquidVault.getDistributedRewardAmount(receiver, startTimeOfStaking)
+          console.log('=== distributedRewardAmount ===', distributedRewardAmount)    /// [Todo]: Error
 
           ///----------------------------------------------------------------
           /// unStake LPs from the LiquidVault after the vesting period is passed
