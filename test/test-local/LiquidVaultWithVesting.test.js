@@ -54,7 +54,7 @@ contract('LiquidVaultWithVesting', function(accounts) {
     feeApprover = await FeeApprover.new();
     feeDistributor = await FeeDistributor.new();
     rocketToken = await RocketToken.new(feeDistributor.address, feeApprover.address, uniswapRouter.address, uniswapFactory.address);
-    dgvcToken = await DGVCToken.new();
+    dgvcToken = await DGVCToken.new({ from: OWNER });
     liquidVault = await LiquidVaultWithVesting.new(dgvcToken.address);
 
     await rocketToken.createUniswapPair();
@@ -304,6 +304,17 @@ contract('LiquidVaultWithVesting', function(accounts) {
   });
 
   describe('Stake (Vesting) LPs', async () => {
+      let lpToken  /// [Note]: Rock3T - ETH pair
+
+      it('Check status before staking', async () => {
+          lpToken = await IUniswapV2Pair.at(uniswapPair)  /// [Note]: Rock3T - ETH pair
+
+          let DGVCTokenBalance = await dgvcToken.balanceOf(OWNER)
+          let LPTokenBalance = await lpToken.balanceOf(OWNER)
+          console.log('=== DGVC Token Balance ===', String(DGVCTokenBalance))
+          console.log('=== LP Token Balance ===', String(LPTokenBalance))
+      })
+
       it('Deposit reward tokens (5000 DGVC tokens) into the LiquidVault', async () => {
           const depositAmount = web3.utils.toWei('1000000', 'ether')  /// 1 milion DGVC 
           let txReceipt1 = await dgvcToken.approve(liquidVault.address, depositAmount, { from: OWNER })
