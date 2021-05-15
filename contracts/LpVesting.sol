@@ -130,5 +130,22 @@ contract LpVesting {
     function getRewardAmountPerSecond() public view returns (uint _rewardAmountPerSecond) {
         return totalRewardAmount.div(VESTING_PERIOD);  // Reward amount per second
     }
+
+    function getStartTimeOfStaking(address staker) public view returns (uint _startTimeOfStaking) {
+        StakeData memory stakeData = stakeDatas[staker];
+        uint startTimeOfStaking = stakeData.startTimeOfStaking;
+        return startTimeOfStaking; // Unit is second
+    }
+
+    function getDistributedRewardAmount(address receiver, uint startTimeOfStaking) public view returns (uint _distributedRewardAmount) {
+        // [Formula of reward]: Total reward amount * Share of staked-LPs (%) * Total staking time (seconds)
+        uint rewardAmountPerSecond = getRewardAmountPerSecond();
+        uint totalStakingTime = block.timestamp.sub(startTimeOfStaking);
+        uint stakingShare = getStakingShare(receiver);
+        uint distributedRewardAmount = rewardAmountPerSecond.mul(startTimeOfStaking).mul(stakingShare).div(100);
+
+        return distributedRewardAmount;
+    }
+    
     
 }

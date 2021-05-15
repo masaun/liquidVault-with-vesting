@@ -323,6 +323,13 @@ contract('LiquidVaultWithVesting', function(accounts) {
           await time.increase(time.duration.weeks(25))
       })
 
+      it('Check distributed-reward amount of owner', async () => {
+          const receiver = OWNER
+          const startTimeOfStaking = await liquidVault.getStartTimeOfStaking(receiver)
+          let distributedRewardAmount = await liquidVault.getDistributedRewardAmount(receiver, startTimeOfStaking, { from: OWNER })
+          console.log('=== distributedRewardAmount ===', distributedRewardAmount)
+      })      
+
       it('unStake LPs from the LiquidVault after the vesting period is passed', async () => {
           const lpToken = uniswapPair   /// LP token (ROCK3T - ETH pair)
           let txReceipt = await liquidVault.unstake(lpToken, { from: OWNER })
