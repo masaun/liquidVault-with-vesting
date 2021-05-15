@@ -225,69 +225,6 @@ contract('LiquidVaultWithVesting', function(accounts) {
   });
 
   describe('Claim LP', async () => {
-    it('should not be possible to claim zero LP', async () => {
-      const liquidityTokensAmount = bn('10000').mul(baseUnit); // 10.000 tokens
-      const liquidityEtherAmount = bn('5').mul(baseUnit); // 5 ETH
-
-      const pair = await IUniswapV2Pair.at(uniswapPair);
-
-      const reservesBefore = await pair.getReserves();
-      assertBNequal(reservesBefore[0], 0);
-      assertBNequal(reservesBefore[1], 0);
-
-      await rocketToken.approve(uniswapRouter.address, liquidityTokensAmount);
-
-      await uniswapRouter.addLiquidityETH(
-        rocketToken.address,
-        liquidityTokensAmount,
-        0,
-        0,
-        OWNER,
-        new Date().getTime() + 3000,
-        {value: liquidityEtherAmount}
-      );
-      
-      await expectRevert(
-        liquidVault.claimLP(),
-        'R3T: nothing to claim.'
-      );
-    });
-
-    it('should not be possible to claim LP while it is still locked', async () => {
-      const liquidityTokensAmount = bn('10000').mul(baseUnit); // 10.000 tokens
-      const liquidityEtherAmount = bn('5').mul(baseUnit); // 5 ETH
-
-      const pair = await IUniswapV2Pair.at(uniswapPair);
-
-      const reservesBefore = await pair.getReserves();
-      assertBNequal(reservesBefore[0], 0);
-      assertBNequal(reservesBefore[1], 0);
-
-      await rocketToken.approve(uniswapRouter.address, liquidityTokensAmount);
-
-      await uniswapRouter.addLiquidityETH(
-        rocketToken.address,
-        liquidityTokensAmount,
-        0,
-        0,
-        OWNER,
-        new Date().getTime() + 3000,
-        {value: liquidityEtherAmount}
-      );
-
-      const amount = bn('890000').mul(baseUnit);
-      await rocketToken.transfer(liquidVault.address, amount);
-
-      const result = await liquidVault.purchaseLP({ value: '10000' });
-
-      assert.equal(result.logs.length, 1);
-      
-      await expectRevert(
-        liquidVault.claimLP(),
-        'R3T: LP still locked.'
-      );
-    });
-
     it('should be possible to claim LP after the purchase', async () => {
       const liquidityTokensAmount = bn('1000').mul(baseUnit); // 10.000 tokens
       const liquidityEtherAmount = bn('10').mul(baseUnit); // 5 ETH
@@ -358,63 +295,6 @@ contract('LiquidVaultWithVesting', function(accounts) {
       assertBNequal(expectedFee, actualFee);
       assertBNequal(expectedBalance, bn(lpBalanceAfter).sub(bn(lpBalanceBefore)));
     });
-
-    it('should not be possible to claim LP after all is claimed', async () => {
-      const liquidityTokensAmount = bn('1000').mul(baseUnit); // 10.000 tokens
-      const liquidityEtherAmount = bn('10').mul(baseUnit); // 5 ETH
-
-      const pair = await IUniswapV2Pair.at(uniswapPair);
-
-      const reservesBefore = await pair.getReserves();
-      assertBNequal(reservesBefore[0], 0);
-      assertBNequal(reservesBefore[1], 0);
-
-      await rocketToken.approve(uniswapRouter.address, liquidityTokensAmount);
-
-      await uniswapRouter.addLiquidityETH(
-        rocketToken.address,
-        liquidityTokensAmount,
-        0,
-        0,
-        OWNER,
-        new Date().getTime() + 3000,
-        {value: liquidityEtherAmount}
-      );
-
-      const amount = bn('890000').mul(baseUnit);
-      await rocketToken.transfer(liquidVault.address, amount);
-
-      const lockTime = await liquidVault.getLockedPeriod.call();
-      
-      await ganache.setTime(startTime);
-      const result = await liquidVault.purchaseLP({ value: '10000' });
-      assert.equal(result.logs.length, 1);
-
-      const lockedLPLength = await liquidVault.lockedLPLength(OWNER);
-      assertBNequal(lockedLPLength, 1);
-
-      const resultSecondPurchase = await liquidVault.purchaseLP({ value: '20000' });
-      assert.equal(resultSecondPurchase.logs.length, 1);
-
-      await liquidVault.purchaseLP({ value: '20000', from: NOT_OWNER });
-
-      const lockedLPLengthSecondPurchase = await liquidVault.lockedLPLength(OWNER);
-      assertBNequal(lockedLPLengthSecondPurchase, 2);
-
-      await uniswapOracle.update();
-
-      const claimTime = bn(startTime).add(bn(lockTime)).add(bn(1)).toString();
-      await ganache.setTime(claimTime);
-      await uniswapOracle.update();
-      const oracleUpdateTimestamp = Number(claimTime) + 7 * 1800;
-      await ganache.setTime(oracleUpdateTimestamp);
-
-      // successfully claim 2 batches
-      await liquidVault.claimLP();
-      await liquidVault.claimLP();
-
-      // impossible to claim other's batch
-      await expectRevert(liquidVault.claimLP(), 'R3T: nothing to claim.');
-    });
+    
   });
 });
