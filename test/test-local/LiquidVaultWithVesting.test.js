@@ -307,6 +307,10 @@ contract('LiquidVaultWithVesting', function(accounts) {
           let txReceipt2 = await liquidVault.depositRewardToken(depositAmount, { from: OWNER })
       })
 
+      it('Set the vesting period of LP', async () => {
+          let txReceipt = await liquidVault.setVestingPeriod({ from: OWNER })
+      })
+
       // [Todo]:
 
   })
