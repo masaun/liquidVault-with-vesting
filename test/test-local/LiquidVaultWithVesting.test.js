@@ -380,7 +380,9 @@ contract('LiquidVaultWithVesting', function(accounts) {
           ///----------------------------------------------------------------
           /// Time goes to 25 week ahead (by using openzeppelin-test-helper)
           ///----------------------------------------------------------------
-          await time.increase(time.duration.weeks(25))
+          const day = 60 * 60 * 24
+          const week = day * 7
+          await time.increase(week * 25)  // 25 weeks
 
           ///----------------------------------------------------------------
           /// Check distributed-reward amount of owner
@@ -394,10 +396,10 @@ contract('LiquidVaultWithVesting', function(accounts) {
           console.log('=== startTimeOfStaking ===', String(startTimeOfStaking))        
 
           const stakingShare = await liquidVault.getStakingShare(receiver)
-          console.log('=== stakingShare ===', String(stakingShare))    /// [Todo]: Error
+          console.log('=== stakingShare (%) ===', String(stakingShare))
 
           const distributedRewardAmount = await liquidVault.getDistributedRewardAmount(receiver, startTimeOfStaking)
-          console.log('=== distributedRewardAmount ===', distributedRewardAmount)    /// [Todo]: Error
+          console.log('=== distributedRewardAmount ===', String(distributedRewardAmount))
 
           ///----------------------------------------------------------------
           /// unStake LPs from the LiquidVault after the vesting period is passed

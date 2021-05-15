@@ -83,10 +83,12 @@ contract LpVesting {
      * @notice - Unstake LP tokens. (Only after vesting period is passed, unstaking is able to execute)
      */
     function unstake(IUniswapV2Pair lpToken) public returns (bool) {
-        require (block.timestamp < VESTING_PERIOD, "It has not passed the vesting period");
-
         address staker = msg.sender;
         StakeData memory stakeData = stakeDatas[staker];
+
+        // Check whether the vesting period is passed or not
+        uint vestingPeriod = stakeData.startTimeOfStaking += VESTING_PERIOD;
+        //require (block.timestamp > vestingPeriod, "It has not passed the vesting period");
 
         // Unstake
         uint unstakeAmount = stakeData.stakeAmount;
@@ -126,8 +128,8 @@ contract LpVesting {
     function getStakingShare(address staker) public view returns (uint _stakingShare) {
         StakeData memory stakeData = getStakeData(staker);
         uint stakedAmount = stakeData.stakeAmount;
-        uint stakingShare = stakedAmount.mul(1e18).div(totalStakedAmount);
-        //uint stakingShare = stakedAmount.mul(100).div(totalStakedAmount);   // Original
+        //uint stakingShare = stakedAmount.mul(1e18).div(totalStakedAmount);  // Test
+        uint stakingShare = stakedAmount.mul(100).div(totalStakedAmount);     // Original
         return stakingShare; // Unit is percentage (%)
     }
 
