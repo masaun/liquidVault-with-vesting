@@ -1,5 +1,8 @@
-const Web3 = require('web3');
+const Web3 = require('web3')
 const web3 = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:8545'))
+
+/// Openzeppelin test-helper
+const { time } = require('@openzeppelin/test-helpers')
 
 const Ganache = require('./rock3t/helpers/ganache');
 const deployUniswap = require('./rock3t/helpers/deployUniswap');
@@ -307,16 +310,25 @@ contract('LiquidVaultWithVesting', function(accounts) {
           let txReceipt2 = await liquidVault.depositRewardToken(depositAmount, { from: OWNER })
       })
 
-      it('Set the vesting period of LP', async () => {
+      it('Set the vesting period (24 weeks) of LP', async () => {
           let txReceipt = await liquidVault.setVestingPeriod({ from: OWNER })
       })
 
-      it('Stake LPs for the vesting period (※ All LPs which user hold are staked)', async () => {
-          let txReceipt = await liquidVault.stake(uniswapPair, { from: OWNER })
+      it('Stake LPs into the LiquidVault for the vesting period (※ All LPs which user hold are staked)', async () => {
+          const lpToken = uniswapPair  /// LP token (ROCK3T - ETH pair)
+          let txReceipt = await liquidVault.stake(lpToken, { from: OWNER })
+      })
+
+      it('Time goes to 25 week ahead (by using openzeppelin-test-helper)', async () => {
+          await time.increase(time.duration.weeks(25))
+      })
+
+      it('unStake LPs from the LiquidVault after the vesting period is passed', async () => {
+          const lpToken = uniswapPair   /// LP token (ROCK3T - ETH pair)
+          let txReceipt = await liquidVault.unstake(lpToken, { from: OWNER })
       })
 
       // [Todo]:
-
   })
 
 });
