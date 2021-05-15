@@ -305,7 +305,7 @@ contract('LiquidVaultWithVesting', function(accounts) {
 
   describe('Stake (Vesting) LPs', async () => {
       it('Deposit reward tokens (5000 DGVC tokens) into the LiquidVault', async () => {
-          const depositAmount = web3.utils.toWei('5000', 'ether')  /// 5000 DGVC 
+          const depositAmount = web3.utils.toWei('1000000', 'ether')  /// 1 milion DGVC 
           let txReceipt1 = await dgvcToken.approve(liquidVault.address, depositAmount, { from: OWNER })
           let txReceipt2 = await liquidVault.depositRewardToken(depositAmount, { from: OWNER })
       })
@@ -325,7 +325,13 @@ contract('LiquidVaultWithVesting', function(accounts) {
 
       it('Check distributed-reward amount of owner', async () => {
           const receiver = OWNER
+ 
+          const stakeData = await liquidVault.getStakeData(receiver)
+          console.log('=== stakeData ===', stakeData)        
+
           const startTimeOfStaking = await liquidVault.getStartTimeOfStaking(receiver)
+          console.log('=== startTimeOfStaking ===', String(startTimeOfStaking))        
+
           let distributedRewardAmount = await liquidVault.getDistributedRewardAmount(receiver, startTimeOfStaking, { from: OWNER })
           console.log('=== distributedRewardAmount ===', distributedRewardAmount)
       })      

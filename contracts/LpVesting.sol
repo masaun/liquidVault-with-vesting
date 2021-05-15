@@ -21,7 +21,7 @@ contract LpVesting {
     //uint public REWARD_TOKEN_AMOUNT_TO_BE_SUPPLED = 1e6 * 1e18;  // Reward tokens amount to be supplied is 6000000
 
     uint public totalStakingAmount;               // amount
-    uint public totalRewardAmount = 1e6 * 1e18;   // Reward tokens amount to be supplied is 6000000
+    uint public totalRewardAmount;
     uint public lastUpdated;
 
     struct StakeData {
@@ -43,6 +43,9 @@ contract LpVesting {
     function depositRewardToken(uint depositAmount) public returns (bool) {
         address projectOwner = msg.sender;
         dgvc.transferFrom(projectOwner, address(this), depositAmount);
+
+        // Set total reward amount
+        totalRewardAmount = depositAmount;
     }
 
     function setVestingPeriod() public returns (bool) {
@@ -129,6 +132,11 @@ contract LpVesting {
 
     function getRewardAmountPerSecond() public view returns (uint _rewardAmountPerSecond) {
         return totalRewardAmount.div(VESTING_PERIOD);  // Reward amount per second
+    }
+
+    function getStakeData(address staker) public view returns (StakeData memory _stakeData) {
+        StakeData memory stakeData = stakeDatas[staker];
+        return stakeData;
     }
 
     function getStartTimeOfStaking(address staker) public view returns (uint _startTimeOfStaking) {
