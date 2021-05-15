@@ -392,6 +392,12 @@ contract('LiquidVaultWithVesting', function(accounts) {
           const stakeData = await liquidVault.getStakeData(receiver)
           console.log('=== stakeData ===', stakeData)        
 
+          const rewardAmountPerSecond = await liquidVault.getRewardAmountPerSecond()
+          console.log('=== rewardAmountPerSecond ===', String(rewardAmountPerSecond))
+
+          const currentTimestamp = await liquidVault.getCurrentTimestamp()
+          console.log('=== currentTimestamp ===', String(currentTimestamp))          
+
           const startTimeOfStaking = await liquidVault.getStartTimeOfStaking(receiver)
           console.log('=== startTimeOfStaking ===', String(startTimeOfStaking))        
 

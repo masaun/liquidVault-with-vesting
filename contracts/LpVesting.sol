@@ -108,11 +108,15 @@ contract LpVesting {
      * @notice - Vesting period is same for all stakers
      */
     function claimRewards(address receiver, uint startTimeOfStaking) public returns (bool) {
-        // [Formula of reward]: Total reward amount * Share of staked-LPs (%) * Total staking time (seconds)
+        // [Formula of reward]: Reward amount (per second) * Total staking time (second) * Share of staked-LPs (%) 
         uint rewardAmountPerSecond = getRewardAmountPerSecond();
-        uint totalStakingTime = block.timestamp.sub(startTimeOfStaking);
+
+        uint currentTime = block.timestamp;
+        uint totalStakingTime = currentTime.sub(startTimeOfStaking);   // Original
+
         uint stakingShare = getStakingShare(receiver);
         uint distributedRewardAmount = rewardAmountPerSecond.mul(totalStakingTime).mul(stakingShare).div(100);
+        //uint distributedRewardAmount = getDistributedRewardAmount(receiver, startTimeOfStaking);
 
         // Distribute reward tokens (DGVC tokens)
         dgvc.transfer(receiver, distributedRewardAmount);
@@ -122,6 +126,10 @@ contract LpVesting {
     //-----------
     // Getter
     //-----------
+    function getCurrentTimestamp() public view returns (uint _currentTimestamp) {
+        return block.timestamp;
+    }
+
     function getVestingPeriod() public view returns (uint _vestingPeriod) {
         return VESTING_PERIOD;
     }
@@ -154,7 +162,7 @@ contract LpVesting {
         uint rewardAmountPerSecond = getRewardAmountPerSecond();
         uint totalStakingTime = block.timestamp.sub(startTimeOfStaking);
         uint stakingShare = getStakingShare(receiver);
-        uint distributedRewardAmount = rewardAmountPerSecond.mul(startTimeOfStaking).mul(stakingShare).div(100);
+        uint distributedRewardAmount = rewardAmountPerSecond.mul(totalStakingTime).mul(stakingShare).div(100);
 
         return distributedRewardAmount;
     }
