@@ -30,15 +30,15 @@ contract('LiquidVaultWithVesting', function(accounts) {
   const treasury = accounts[7];
 
   let uniswapOracle;
-  let uniswapPair;
+  let uniswapPair;     /// LP token (ROCK3T - ETH pair)
   let uniswapFactory;
   let uniswapRouter;
-  let weth;
+  let weth;            /// WETH token
 
   let feeDistributor;
   let feeApprover;
-  let rocketToken;
-  let dgvcToken;
+  let rocketToken;     /// Rock3T token
+  let dgvcToken;       /// DGVC token
   let liquidVault;
 
   before('setup others', async function() {
@@ -309,6 +309,10 @@ contract('LiquidVaultWithVesting', function(accounts) {
 
       it('Set the vesting period of LP', async () => {
           let txReceipt = await liquidVault.setVestingPeriod({ from: OWNER })
+      })
+
+      it('Stake LPs for the vesting period (※ All LPs which user hold are staked)', async () => {
+          let txReceipt = await liquidVault.stake(uniswapPair, { from: OWNER })
       })
 
       // [Todo]:
