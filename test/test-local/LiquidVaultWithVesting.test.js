@@ -1,3 +1,6 @@
+const Web3 = require('web3');
+const web3 = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:8545'))
+
 const Ganache = require('./rock3t/helpers/ganache');
 const deployUniswap = require('./rock3t/helpers/deployUniswap');
 const { expectEvent, expectRevert, constants } = require("@openzeppelin/test-helpers");
@@ -295,6 +298,17 @@ contract('LiquidVaultWithVesting', function(accounts) {
       assertBNequal(expectedFee, actualFee);
       assertBNequal(expectedBalance, bn(lpBalanceAfter).sub(bn(lpBalanceBefore)));
     });
-    
   });
+
+  describe('Stake (Vesting) LPs', async () => {
+      it('Deposit reward tokens (5000 DGVC tokens) into the LiquidVault', async () => {
+          const depositAmount = web3.utils.toWei('5000', 'ether')  /// 5000 DGVC 
+          let txReceipt1 = await dgvcToken.approve(liquidVault.address, depositAmount, { from: OWNER })
+          let txReceipt2 = await liquidVault.depositRewardToken(depositAmount, { from: OWNER })
+      })
+
+      // [Todo]:
+
+  })
+
 });

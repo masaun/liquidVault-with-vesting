@@ -8,7 +8,7 @@ import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
  */
 contract DGVCToken is ERC20 {
     constructor() public ERC20("DGVC Token (Mock)", "DGVC") {
-        uint initialSupply = 1e8 * 1*18;   // 1 milion
+        uint initialSupply = 1e8 * 1e18;   // 1 milion
         _mint(msg.sender, initialSupply);
     }
 }
