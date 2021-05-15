@@ -1,11 +1,12 @@
-
-const Ganache = require('./helpers/ganache');
-const deployUniswap = require('./helpers/deployUniswap');
+const Ganache = require('./rock3t/helpers/ganache');
+const deployUniswap = require('./rock3t/helpers/deployUniswap');
 const { expectEvent, expectRevert, constants } = require("@openzeppelin/test-helpers");
 
 const FeeDistributor = artifacts.require('FeeDistributor');
 const RocketToken = artifacts.require('RocketToken');
-const LiquidVault = artifacts.require('LiquidVault');
+const DGVCToken = artifacts.require('DGVCToken');
+const LiquidVaultWithVesting = artifacts.require('LiquidVaultWithVesting');
+//const LiquidVault = artifacts.require('LiquidVault');
 const IUniswapV2Pair = artifacts.require('IUniswapV2Pair');
 const FeeApprover = artifacts.require('FeeApprover');
 const PriceOracle = artifacts.require('PriceOracle');
@@ -34,6 +35,7 @@ contract('LiquidVaultWithVesting', function(accounts) {
   let feeDistributor;
   let feeApprover;
   let rocketToken;
+  let dgvcToken;
   let liquidVault;
 
   before('setup others', async function() {
@@ -46,7 +48,8 @@ contract('LiquidVaultWithVesting', function(accounts) {
     feeApprover = await FeeApprover.new();
     feeDistributor = await FeeDistributor.new();
     rocketToken = await RocketToken.new(feeDistributor.address, feeApprover.address, uniswapRouter.address, uniswapFactory.address);
-    liquidVault = await LiquidVault.new();
+    dgvcToken = await DGVCToken.new();
+    liquidVault = await LiquidVaultWithVesting.new(dgvcToken.address);
 
     await rocketToken.createUniswapPair();
     uniswapPair = await rocketToken.tokenUniswapPair();
