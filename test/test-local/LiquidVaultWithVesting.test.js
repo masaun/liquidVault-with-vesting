@@ -340,7 +340,6 @@ contract('LiquidVaultWithVesting', function(accounts) {
           await uniswapOracle.update();
 
           const lpBalanceBefore = await lpToken.balanceOf(OWNER);
-          console.log('=== lpBalanceBefore (of owner) ===', String(lpBalanceBefore))
           const claimTime = bn(startTime).add(bn(lockTime)).add(bn(1)).toString();
           await ganache.setTime(claimTime);
           await uniswapOracle.update();
@@ -351,7 +350,6 @@ contract('LiquidVaultWithVesting', function(accounts) {
           const claim = await liquidVault.claimLP();
 
           const lpBalanceAfter = await lpToken.balanceOf(OWNER);
-          console.log('=== lpBalanceAfter (of owner) ===', String(lpBalanceAfter))
           const lockedLPLengthAfterClaim = await liquidVault.lockedLPLength(OWNER);
 
 
@@ -366,12 +364,18 @@ contract('LiquidVaultWithVesting', function(accounts) {
           /// Set the vesting period (24 weeks) of LP
           ///----------------------------------------------------------------
           let txReceipt3 = await liquidVault.setVestingPeriod({ from: OWNER })
+          console.log('=== txReceipt3 (setVestingPeriod) ===', txReceipt3)
 
           ///----------------------------------------------------------------
           /// Stake LPs into the LiquidVault for the vesting period (※ All LPs which user hold are staked)
           ///----------------------------------------------------------------
-          const LP_TOKEN = uniswapPair  /// LP token (ROCK3T - ETH pair)
-          let txReceipt = await liquidVault.stake(LP_TOKEN, { from: OWNER })
+          const lpBalance = await lpToken.balanceOf(OWNER);
+          console.log('=== lpBalance (of owner) ===', String(lpBalance))
+
+          const LP_TOKEN = lpToken.address  /// LP token (ROCK3T - ETH pair)
+          let txReceipt4 = await lpToken.approve(liquidVault.address, lpBalance, { from: OWNER })
+          let txReceipt5 = await liquidVault.stake(LP_TOKEN, { from: OWNER })
+          console.log('=== txReceipt4 (stake) ===', txReceipt4)
 
           ///----------------------------------------------------------------
           /// Time goes to 25 week ahead (by using openzeppelin-test-helper)
@@ -396,7 +400,7 @@ contract('LiquidVaultWithVesting', function(accounts) {
           /// unStake LPs from the LiquidVault after the vesting period is passed
           ///----------------------------------------------------------------
           //const LP_TOKEN = uniswapPair   /// LP token (ROCK3T - ETH pair)
-          let txReceipt4 = await liquidVault.unstake(LP_TOKEN, { from: OWNER })
+          let txReceipt6 = await liquidVault.unstake(LP_TOKEN, { from: OWNER })
 
       });
 
