@@ -302,8 +302,8 @@ contract('LiquidVaultWithVesting', function(accounts) {
           ///----------------------------------------------------------------
           let lpBalanceBeforeStake = await lpToken.balanceOf(OWNER)
           let dgvcBalanceBeforeStake = await dgvcToken.balanceOf(OWNER)
-          console.log('\n=== LP Balance before stake ===', String(lpBalanceBeforeStake))
-          console.log('=== DGVC balance before stake ===', String(dgvcBalanceBeforeStake))
+          console.log('\n=== LP Balance before stake ===', web3.utils.fromWei(String(lpBalanceBeforeStake), 'ether'))
+          console.log('=== DGVC balance before stake ===', web3.utils.fromWei(String(dgvcBalanceBeforeStake), 'ether'))
 
 
           ///----------------------------------------------------------------
@@ -330,7 +330,7 @@ contract('LiquidVaultWithVesting', function(accounts) {
           console.log('\n=== stakeData of User1 ===', stakeData)        
 
           const rewardAmountPerSecond = await liquidVault.getRewardAmountPerSecond()
-          console.log('=== rewardAmountPerSecond (DGVC) ===', String(rewardAmountPerSecond))
+          console.log('=== rewardAmountPerSecond (DGVC) ===', web3.utils.fromWei(String(rewardAmountPerSecond), 'ether'))
 
           const currentTimestamp = await liquidVault.getCurrentTimestamp()
           console.log('=== currentTimestamp ===', String(currentTimestamp))          
@@ -342,7 +342,7 @@ contract('LiquidVaultWithVesting', function(accounts) {
           console.log('=== stakingShare (%) ===', String(stakingShare))
 
           const distributedRewardAmount = await liquidVault.getDistributedRewardAmount(receiver, startTimeOfStaking)
-          console.log('=== distributedRewardAmount (DGVC) ===', String(distributedRewardAmount))
+          console.log('=== distributedRewardAmount (DGVC) ===', web3.utils.fromWei(String(distributedRewardAmount), 'ether'))
 
           ///----------------------------------------------------------------
           /// unStake LPs from the LiquidVault after the vesting period is passed
@@ -354,8 +354,8 @@ contract('LiquidVaultWithVesting', function(accounts) {
           ///----------------------------------------------------------------
           let lpBalanceAfterUnstake = await lpToken.balanceOf(OWNER);
           let dgvcBalanceAfterUnstake = await dgvcToken.balanceOf(OWNER)
-          console.log('\n=== LP Balance after unstake ===', String(lpBalanceAfterUnstake))
-          console.log('=== DGVC balance after unstake ===', String(dgvcBalanceAfterUnstake))
+          console.log('\n=== LP Balance after unstake ===', web3.utils.fromWei(String(lpBalanceAfterUnstake), 'ether'))
+          console.log('=== DGVC balance after unstake ===', web3.utils.fromWei(String(dgvcBalanceAfterUnstake), 'ether'))
       });
   })
 
