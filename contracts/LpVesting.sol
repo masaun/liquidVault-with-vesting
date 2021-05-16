@@ -87,7 +87,7 @@ contract LpVesting {
         StakeData memory stakeData = stakeDatas[staker];
 
         // Check whether the vesting period is passed or not
-        uint vestingPeriod = stakeData.startTimeOfStaking += VESTING_PERIOD;
+        uint vestingPeriod = stakeData.startTimeOfStaking.add(VESTING_PERIOD);
         //require (block.timestamp > vestingPeriod, "It has not passed the vesting period");
 
         // Unstake
@@ -96,7 +96,6 @@ contract LpVesting {
 
         // Update total staking amount
         totalStakedAmount -= unstakeAmount;
-        //totalStakedAmount.sub(unstakeAmount);
 
         // Distribute reward tokens
         uint _startTimeOfStaking = stakeData.startTimeOfStaking;
@@ -111,7 +110,7 @@ contract LpVesting {
         // [Formula of reward]: Reward amount (per second) * Total staking time (second) * Share of staked-LPs (%) 
         uint rewardAmountPerSecond = getRewardAmountPerSecond();
 
-        uint currentTime = block.timestamp;
+        uint currentTime = getCurrentTimestamp();
         uint totalStakingTime = currentTime.sub(startTimeOfStaking);   // Original
 
         uint stakingShare = getStakingShare(receiver);
@@ -123,9 +122,9 @@ contract LpVesting {
     }
     
 
-    //-----------
-    // Getter
-    //-----------
+    //--------------------
+    // Getter methods
+    //--------------------
     function getCurrentTimestamp() public view returns (uint _currentTimestamp) {
         return block.timestamp;
     }
