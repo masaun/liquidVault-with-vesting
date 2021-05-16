@@ -295,17 +295,24 @@ contract('LiquidVaultWithVesting', function(accounts) {
           const transferringLpAmount = web3.utils.toWei('10', 'ether')  /// 10 UNI-V2 LP Token         
           await lpToken.transfer(USER_1, transferringLpAmount, { from: OWNER })
 
+          ///----------------------------------------------------------------
+          /// Check balances before stake
+          ///----------------------------------------------------------------
+          let lpBalanceOfOwnerBefore = await lpToken.balanceOf(OWNER);
+          let lpBalanceOfUser1Before = await lpToken.balanceOf(USER_1);
+          let dgvcBalanceOfOwnerBefore = await dgvcToken.balanceOf(OWNER)
+          let dgvcBalanceOfUser1Before = await dgvcToken.balanceOf(USER_1)
+          console.log('=== LP Balance (of owner) before stake ===', String(lpBalanceOfOwnerBefore))
+          console.log('=== LP Balance (of user1) before stake ===', String(lpBalanceOfUser1Before))
+          console.log('=== DGVC balance of owner before stake ===', String(dgvcBalanceOfOwnerBefore))
+          console.log('=== DGVC balance of user1 before stake ===', String(dgvcBalanceOfUser1Before))
+
 
           ///----------------------------------------------------------------
           /// Stake LPs into the LiquidVault for the vesting period (※ All LPs which user hold are staked)
           ///----------------------------------------------------------------
-          const lpBalanceOfOwner = await lpToken.balanceOf(OWNER);
-          const lpBalanceOfUser1 = await lpToken.balanceOf(USER_1);
-          console.log('=== lpBalance (of owner) ===', String(lpBalanceOfOwner))
-          console.log('=== lpBalance (of user1) ===', String(lpBalanceOfUser1))
-
           const LP_TOKEN = lpToken.address  /// LP token (ROCK3T - ETH pair)
-          let txReceipt4 = await lpToken.approve(liquidVault.address, lpBalanceOfUser1, { from: USER_1 })
+          let txReceipt4 = await lpToken.approve(liquidVault.address, lpBalanceOfUser1Before, { from: USER_1 })
           let txReceipt5 = await liquidVault.stake(LP_TOKEN, { from: USER_1 })
           //console.log('=== txReceipt4 (stake) ===', txReceipt4)
 
@@ -345,6 +352,18 @@ contract('LiquidVaultWithVesting', function(accounts) {
           //const LP_TOKEN = uniswapPair   /// LP token (ROCK3T - ETH pair)
           let txReceipt6 = await liquidVault.unstake(LP_TOKEN, { from: USER_1 })
           console.log('=== txReceipt6 (unstake) ===', txReceipt6)
+
+          ///----------------------------------------------------------------
+          /// Check balances after unstake
+          ///----------------------------------------------------------------
+          let lpBalanceOfOwnerAfter = await lpToken.balanceOf(OWNER);
+          let lpBalanceOfUser1After = await lpToken.balanceOf(USER_1);
+          let dgvcBalanceOfOwnerAfter = await dgvcToken.balanceOf(OWNER)
+          let dgvcBalanceOfUser1After = await dgvcToken.balanceOf(USER_1)
+          console.log('=== LP Balance (of owner) after unstake ===', String(lpBalanceOfOwnerAfter))
+          console.log('=== LP Balance (of user1) after unstake ===', String(lpBalanceOfUser1After))
+          console.log('=== DGVC balance of owner after unstake ===', String(dgvcBalanceOfOwnerAfter))
+          console.log('=== DGVC balance of user1 after unstake ===', String(dgvcBalanceOfUser1After))
       });
 
 
