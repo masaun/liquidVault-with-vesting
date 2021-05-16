@@ -94,12 +94,12 @@ contract LpVesting {
         uint unstakeAmount = stakeData.stakeAmount;
         lpToken.transfer(staker, unstakeAmount);
 
-        // Update total staking amount
-        totalStakedAmount -= unstakeAmount;
-
         // Distribute reward tokens
         uint _startTimeOfStaking = stakeData.startTimeOfStaking;
         claimRewards(staker, _startTimeOfStaking);
+
+        // Update total staking amount (Note: This should be executed in final raw of this method)
+        totalStakedAmount -= unstakeAmount;
     }
 
     /**
@@ -136,7 +136,6 @@ contract LpVesting {
     function getStakingShare(address staker) public view returns (uint _stakingShare) {
         StakeData memory stakeData = getStakeData(staker);
         uint stakedAmount = stakeData.stakeAmount;
-        //uint stakingShare = stakedAmount.mul(1e18).div(totalStakedAmount);  // Test
         uint stakingShare = stakedAmount.mul(100).div(totalStakedAmount);     // Original
         return stakingShare; // Unit is percentage (%)
     }
