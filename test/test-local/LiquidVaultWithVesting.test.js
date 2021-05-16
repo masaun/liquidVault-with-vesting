@@ -27,6 +27,7 @@ contract('LiquidVaultWithVesting', function(accounts) {
 
   const OWNER = accounts[0];
   const NOT_OWNER = accounts[1];
+  const USER_1 = accounts[2];
   const baseUnit = bn('1000000000000000000');
   const startTime = Math.floor(Date.now() / 1000);
 
@@ -289,13 +290,22 @@ contract('LiquidVaultWithVesting', function(accounts) {
           //console.log('=== txReceipt3 (setVestingPeriod) ===', txReceipt3)
 
           ///----------------------------------------------------------------
+          /// Transfer 10 LPs from Owner to User1
+          ///----------------------------------------------------------------
+          const transferringLpAmount = web3.utils.toWei('10', 'ether')  /// 10 UNI-V2 LP Token         
+          await lpToken.transfer(USER_1, transferringLpAmount, { from: OWNER })
+
+
+          ///----------------------------------------------------------------
           /// Stake LPs into the LiquidVault for the vesting period (※ All LPs which user hold are staked)
           ///----------------------------------------------------------------
-          const lpBalance = await lpToken.balanceOf(OWNER);
-          //console.log('=== lpBalance (of owner) ===', String(lpBalance))
+          const lpBalanceOfOwner = await lpToken.balanceOf(OWNER);
+          const lpBalanceOfUser1 = await lpToken.balanceOf(USER_1);
+          console.log('=== lpBalance (of owner) ===', String(lpBalanceOfOwner))
+          console.log('=== lpBalance (of user1) ===', String(lpBalanceOfUser1))
 
           const LP_TOKEN = lpToken.address  /// LP token (ROCK3T - ETH pair)
-          let txReceipt4 = await lpToken.approve(liquidVault.address, lpBalance, { from: OWNER })
+          let txReceipt4 = await lpToken.approve(liquidVault.address, lpBalanceOfOwner, { from: OWNER })
           let txReceipt5 = await liquidVault.stake(LP_TOKEN, { from: OWNER })
           //console.log('=== txReceipt4 (stake) ===', txReceipt4)
 
