@@ -305,8 +305,8 @@ contract('LiquidVaultWithVesting', function(accounts) {
           console.log('=== lpBalance (of user1) ===', String(lpBalanceOfUser1))
 
           const LP_TOKEN = lpToken.address  /// LP token (ROCK3T - ETH pair)
-          let txReceipt4 = await lpToken.approve(liquidVault.address, lpBalanceOfOwner, { from: OWNER })
-          let txReceipt5 = await liquidVault.stake(LP_TOKEN, { from: OWNER })
+          let txReceipt4 = await lpToken.approve(liquidVault.address, lpBalanceOfUser1, { from: USER_1 })
+          let txReceipt5 = await liquidVault.stake(LP_TOKEN, { from: USER_1 })
           //console.log('=== txReceipt4 (stake) ===', txReceipt4)
 
           ///----------------------------------------------------------------
@@ -317,9 +317,9 @@ contract('LiquidVaultWithVesting', function(accounts) {
           await time.increase(week * 25)  // 25 weeks
 
           ///----------------------------------------------------------------
-          /// Check distributed-reward amount of owner
+          /// Check distributed-reward amount of User1
           ///----------------------------------------------------------------
-          const receiver = OWNER
+          const receiver = USER_1
  
           const stakeData = await liquidVault.getStakeData(receiver)
           console.log('=== stakeData ===', stakeData)        
@@ -343,7 +343,7 @@ contract('LiquidVaultWithVesting', function(accounts) {
           /// unStake LPs from the LiquidVault after the vesting period is passed
           ///----------------------------------------------------------------
           //const LP_TOKEN = uniswapPair   /// LP token (ROCK3T - ETH pair)
-          let txReceipt6 = await liquidVault.unstake(LP_TOKEN, { from: OWNER })
+          let txReceipt6 = await liquidVault.unstake(LP_TOKEN, { from: USER_1 })
           console.log('=== txReceipt6 (unstake) ===', txReceipt6)
       });
 
