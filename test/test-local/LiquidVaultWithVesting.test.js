@@ -302,10 +302,10 @@ contract('LiquidVaultWithVesting', function(accounts) {
           let lpBalanceOfUser1Before = await lpToken.balanceOf(USER_1);
           let dgvcBalanceOfOwnerBefore = await dgvcToken.balanceOf(OWNER)
           let dgvcBalanceOfUser1Before = await dgvcToken.balanceOf(USER_1)
-          console.log('=== LP Balance (of owner) before stake ===', String(lpBalanceOfOwnerBefore))
+          //console.log('=== LP Balance (of owner) before stake ===', String(lpBalanceOfOwnerBefore))
           console.log('=== LP Balance (of user1) before stake ===', String(lpBalanceOfUser1Before))
-          console.log('=== DGVC balance of owner before stake ===', String(dgvcBalanceOfOwnerBefore))
-          console.log('=== DGVC balance of user1 before stake ===', String(dgvcBalanceOfUser1Before))
+          //console.log('=== DGVC balance (of owner) before stake ===', String(dgvcBalanceOfOwnerBefore))
+          console.log('=== DGVC balance (of user1) before stake ===', String(dgvcBalanceOfUser1Before))
 
 
           ///----------------------------------------------------------------
@@ -360,10 +360,10 @@ contract('LiquidVaultWithVesting', function(accounts) {
           let lpBalanceOfUser1After = await lpToken.balanceOf(USER_1);
           let dgvcBalanceOfOwnerAfter = await dgvcToken.balanceOf(OWNER)
           let dgvcBalanceOfUser1After = await dgvcToken.balanceOf(USER_1)
-          console.log('=== LP Balance (of owner) after unstake ===', String(lpBalanceOfOwnerAfter))
+          //console.log('=== LP Balance (of owner) after unstake ===', String(lpBalanceOfOwnerAfter))
           console.log('=== LP Balance (of user1) after unstake ===', String(lpBalanceOfUser1After))
-          console.log('=== DGVC balance of owner after unstake ===', String(dgvcBalanceOfOwnerAfter))
-          console.log('=== DGVC balance of user1 after unstake ===', String(dgvcBalanceOfUser1After))
+          //console.log('=== DGVC balance (of owner) after unstake ===', String(dgvcBalanceOfOwnerAfter))
+          console.log('=== DGVC balance (of user1) after unstake ===', String(dgvcBalanceOfUser1After))
       });
 
 
