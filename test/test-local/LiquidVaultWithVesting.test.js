@@ -27,6 +27,8 @@ contract('LiquidVaultWithVesting', function(accounts) {
 
   const OWNER = accounts[0];
   const NOT_OWNER = accounts[1];
+  //const USER_1 = accounts[2];
+  const INITIAL_DGVC_HOLDER = accounts[2];
   const baseUnit = bn('1000000000000000000');
   const startTime = Math.floor(Date.now() / 1000);
 
@@ -56,7 +58,8 @@ contract('LiquidVaultWithVesting', function(accounts) {
     feeApprover = await FeeApprover.new();
     feeDistributor = await FeeDistributor.new();
     rocketToken = await RocketToken.new(feeDistributor.address, feeApprover.address, uniswapRouter.address, uniswapFactory.address);
-    dgvcToken = await DGVCToken.new({ from: OWNER });
+    dgvcToken = await DGVCToken.new({ from: INITIAL_DGVC_HOLDER });
+    //dgvcToken = await DGVCToken.new({ from: OWNER });
     liquidVault = await LiquidVaultWithVesting.new(dgvcToken.address);
 
     await rocketToken.createUniswapPair();
@@ -213,90 +216,12 @@ contract('LiquidVaultWithVesting', function(accounts) {
       // eth fee is 0, so liquidVault did not receive tokens from fee swap
       assert.equal(balanceAfter.add(rocketRequired).eq(balanceBefore), true);
     });
-
   });
 
-  describe('Claim LP', async () => {
-    it('should be possible to claim LP after the purchase', async () => {
-      const liquidityTokensAmount = bn('1000').mul(baseUnit); // 10.000 tokens
-      const liquidityEtherAmount = bn('10').mul(baseUnit);    // 5 ETH
-
-      //pair = await IUniswapV2Pair.at(uniswapPair);
-      const pair = await IUniswapV2Pair.at(uniswapPair);
-
-      const reservesBefore = await pair.getReserves();
-      assertBNequal(reservesBefore[0], 0);
-      assertBNequal(reservesBefore[1], 0);
-
-      await rocketToken.approve(uniswapRouter.address, liquidityTokensAmount);
-
-      await uniswapRouter.addLiquidityETH(
-        rocketToken.address,
-        liquidityTokensAmount,
-        0,
-        0,
-        OWNER,
-        new Date().getTime() + 3000,
-        {value: liquidityEtherAmount}
-      );
-
-      const amount = bn('890000').mul(baseUnit);
-      await rocketToken.transfer(liquidVault.address, amount);
-
-      const lockTime = await liquidVault.getLockedPeriod.call();
-      
-      await ganache.setTime(startTime);
-      const result = await liquidVault.purchaseLP({ value: '10000' });
-      assert.equal(result.logs.length, 1);
-
-      const lockedLPLength = await liquidVault.lockedLPLength(OWNER);
-      assertBNequal(lockedLPLength, 1);
-
-      const resultSecondPurchase = await liquidVault.purchaseLP({ value: '20000' });
-      assert.equal(resultSecondPurchase.logs.length, 1);
-
-      const lockedLPLengthSecondPurchase = await liquidVault.lockedLPLength(OWNER);
-      assertBNequal(lockedLPLengthSecondPurchase, 2);
-
-      await uniswapOracle.update();
-
-      const lpBalanceBefore = await pair.balanceOf(OWNER);
-      const claimTime = bn(startTime).add(bn(lockTime)).add(bn(1)).toString();
-      await ganache.setTime(claimTime);
-      await uniswapOracle.update();
-      const oracleUpdateTimestamp = Number(claimTime) + 7 * 1800;
-      await ganache.setTime(oracleUpdateTimestamp);
-
-      const lockedLP = await liquidVault.getLockedLP(OWNER, 0);
-      const claim = await liquidVault.claimLP();
-
-      const lpBalanceAfter = await pair.balanceOf(OWNER);
-      const lockedLPLengthAfterClaim = await liquidVault.lockedLPLength(OWNER);
-
-      const holder = lockedLP[0];
-      const amountToClaim = lockedLP[1];
-      const expectedLockPercentage = 20;
-      const lockPercentage = await liquidVault.lockPercentageUINT();
-      const expectedFee = Math.floor((amountToClaim * expectedLockPercentage) / 1000);
-      const expectedBalance = amountToClaim - expectedFee;
-      const actualFee = claim.logs[0].args[3];
-
-      assert.equal(holder, OWNER);
-      assertBNequal(expectedLockPercentage.toString(), lockPercentage);
-      assertBNequal(lockedLPLengthAfterClaim, lockedLPLengthSecondPurchase);
-      assertBNequal(amountToClaim, claim.logs[0].args[1]);
-      assertBNequal(expectedFee, actualFee);
-      assertBNequal(expectedBalance, bn(lpBalanceAfter).sub(bn(lpBalanceBefore)));
-    });
-  });
-
-
-
-
-  describe('Stake (Vesting) LPs', async () => {
+  describe('Claim LPs. Then, Stake (Vesting) LPs. Then, unStake LPs + Receive rewards', async () => {
       let lpToken  /// [Note]: Rock3T - ETH pair
 
-      it('should be possible to claim LP after the purchase', async () => {
+      it('Claim LPs after the purchase. Then, Stake (Vesting) LPs. Then, unStake LPs + Receive rewards', async () => {
           const liquidityTokensAmount = bn('1000').mul(baseUnit); // 10.000 tokens
           const liquidityEtherAmount = bn('10').mul(baseUnit);    // 5 ETH
 
@@ -354,11 +279,11 @@ contract('LiquidVaultWithVesting', function(accounts) {
 
 
           ///----------------------------------------------------------------
-          /// Deposit reward tokens (5000 DGVC tokens) into the LiquidVault
+          /// Deposit reward tokens (5000 DGVC tokens) into the LiquidVault (Depositor: Initial DGVC token holder)
           ///----------------------------------------------------------------
-          const depositAmount = web3.utils.toWei('1000000', 'ether')  /// 1 milion DGVC 
-          let txReceipt1 = await dgvcToken.approve(liquidVault.address, depositAmount, { from: OWNER })
-          let txReceipt2 = await liquidVault.depositRewardToken(depositAmount, { from: OWNER })
+          const depositAmount = web3.utils.toWei('5000', 'ether')  /// 5000 DGVC 
+          let txReceipt1 = await dgvcToken.approve(liquidVault.address, depositAmount, { from: INITIAL_DGVC_HOLDER })
+          let txReceipt2 = await liquidVault.depositRewardToken(depositAmount, { from: INITIAL_DGVC_HOLDER })
 
           ///----------------------------------------------------------------
           /// Set the vesting period (24 weeks) of LP
@@ -367,13 +292,25 @@ contract('LiquidVaultWithVesting', function(accounts) {
           //console.log('=== txReceipt3 (setVestingPeriod) ===', txReceipt3)
 
           ///----------------------------------------------------------------
+          /// Transfer 10 LPs from Owner to User1
+          ///----------------------------------------------------------------
+          //const transferringLpAmount = web3.utils.toWei('10', 'ether')  /// 10 UNI-V2 LP Token         
+          //await lpToken.transfer(USER_1, transferringLpAmount, { from: OWNER })
+
+          ///----------------------------------------------------------------
+          /// Check balances before stake
+          ///----------------------------------------------------------------
+          let lpBalanceBeforeStake = await lpToken.balanceOf(OWNER)
+          let dgvcBalanceBeforeStake = await dgvcToken.balanceOf(OWNER)
+          console.log('\n=== LP Balance before stake ===', web3.utils.fromWei(String(lpBalanceBeforeStake), 'ether'))
+          console.log('=== DGVC balance before stake ===', web3.utils.fromWei(String(dgvcBalanceBeforeStake), 'ether'))
+
+
+          ///----------------------------------------------------------------
           /// Stake LPs into the LiquidVault for the vesting period (※ All LPs which user hold are staked)
           ///----------------------------------------------------------------
-          const lpBalance = await lpToken.balanceOf(OWNER);
-          //console.log('=== lpBalance (of owner) ===', String(lpBalance))
-
           const LP_TOKEN = lpToken.address  /// LP token (ROCK3T - ETH pair)
-          let txReceipt4 = await lpToken.approve(liquidVault.address, lpBalance, { from: OWNER })
+          let txReceipt4 = await lpToken.approve(liquidVault.address, lpBalanceBeforeStake, { from: OWNER })
           let txReceipt5 = await liquidVault.stake(LP_TOKEN, { from: OWNER })
           //console.log('=== txReceipt4 (stake) ===', txReceipt4)
 
@@ -385,15 +322,15 @@ contract('LiquidVaultWithVesting', function(accounts) {
           await time.increase(week * 25)  // 25 weeks
 
           ///----------------------------------------------------------------
-          /// Check distributed-reward amount of owner
+          /// Check distributed-reward amount of User1
           ///----------------------------------------------------------------
           const receiver = OWNER
  
           const stakeData = await liquidVault.getStakeData(receiver)
-          console.log('=== stakeData ===', stakeData)        
+          console.log('\n=== stakeData of User1 ===', stakeData)        
 
           const rewardAmountPerSecond = await liquidVault.getRewardAmountPerSecond()
-          console.log('=== rewardAmountPerSecond (DGVC) ===', String(rewardAmountPerSecond))
+          console.log('=== rewardAmountPerSecond (DGVC) ===', web3.utils.fromWei(String(rewardAmountPerSecond), 'ether'))
 
           const currentTimestamp = await liquidVault.getCurrentTimestamp()
           console.log('=== currentTimestamp ===', String(currentTimestamp))          
@@ -405,61 +342,21 @@ contract('LiquidVaultWithVesting', function(accounts) {
           console.log('=== stakingShare (%) ===', String(stakingShare))
 
           const distributedRewardAmount = await liquidVault.getDistributedRewardAmount(receiver, startTimeOfStaking)
-          console.log('=== distributedRewardAmount (DGVC) ===', String(distributedRewardAmount))
+          console.log('=== distributedRewardAmount (DGVC) ===', web3.utils.fromWei(String(distributedRewardAmount), 'ether'))
 
           ///----------------------------------------------------------------
           /// unStake LPs from the LiquidVault after the vesting period is passed
           ///----------------------------------------------------------------
-          //const LP_TOKEN = uniswapPair   /// LP token (ROCK3T - ETH pair)
           let txReceipt6 = await liquidVault.unstake(LP_TOKEN, { from: OWNER })
-          console.log('=== txReceipt6 (unstake) ===', String(txReceipt6))
+
+          ///----------------------------------------------------------------
+          /// Check balances after unstake
+          ///----------------------------------------------------------------
+          let lpBalanceAfterUnstake = await lpToken.balanceOf(OWNER);
+          let dgvcBalanceAfterUnstake = await dgvcToken.balanceOf(OWNER)
+          console.log('\n=== LP Balance after unstake ===', web3.utils.fromWei(String(lpBalanceAfterUnstake), 'ether'))
+          console.log('=== DGVC balance after unstake ===', web3.utils.fromWei(String(dgvcBalanceAfterUnstake), 'ether'))
       });
-
-      // it('Check status before staking', async () => {
-      //     // lpToken = await IUniswapV2Pair.at(uniswapPair)  /// [Note]: Rock3T - ETH pair
-      //     let DGVCTokenBalance = await dgvcToken.balanceOf(OWNER)
-      //     let LPTokenBalance = await lpToken.balanceOf(OWNER)
-      //     console.log('=== DGVC Token Balance ===', String(DGVCTokenBalance))
-      //     console.log('=== LP Token Balance (Rock3T - ETH pair) ===', String(LPTokenBalance))
-      // })
-
-      // it('Deposit reward tokens (5000 DGVC tokens) into the LiquidVault', async () => {
-      //     const depositAmount = web3.utils.toWei('1000000', 'ether')  /// 1 milion DGVC 
-      //     let txReceipt1 = await dgvcToken.approve(liquidVault.address, depositAmount, { from: OWNER })
-      //     let txReceipt2 = await liquidVault.depositRewardToken(depositAmount, { from: OWNER })
-      // })
-
-      // it('Set the vesting period (24 weeks) of LP', async () => {
-      //     let txReceipt = await liquidVault.setVestingPeriod({ from: OWNER })
-      // })
-
-      // it('Stake LPs into the LiquidVault for the vesting period (※ All LPs which user hold are staked)', async () => {
-      //     const LP_TOKEN = uniswapPair  /// LP token (ROCK3T - ETH pair)
-      //     let txReceipt = await liquidVault.stake(LP_TOKEN, { from: OWNER })
-      // })
-
-      // it('Time goes to 25 week ahead (by using openzeppelin-test-helper)', async () => {
-      //     await time.increase(time.duration.weeks(25))
-      // })
-
-      // it('Check distributed-reward amount of owner', async () => {
-      //     const receiver = OWNER
- 
-      //     const stakeData = await liquidVault.getStakeData(receiver)
-      //     console.log('=== stakeData ===', stakeData)        
-
-      //     const startTimeOfStaking = await liquidVault.getStartTimeOfStaking(receiver)
-      //     console.log('=== startTimeOfStaking ===', String(startTimeOfStaking))        
-
-      //     let distributedRewardAmount = await liquidVault.getDistributedRewardAmount(receiver, startTimeOfStaking, { from: OWNER })
-      //     console.log('=== distributedRewardAmount ===', distributedRewardAmount)
-      // })      
-
-      // it('unStake LPs from the LiquidVault after the vesting period is passed', async () => {
-      //     const LP_TOKEN = uniswapPair   /// LP token (ROCK3T - ETH pair)
-      //     let txReceipt = await liquidVault.unstake(LP_TOKEN, { from: OWNER })
-      // })
-
   })
 
 });
