@@ -87,8 +87,7 @@ contract LpVesting {
         StakeData memory stakeData = stakeDatas[staker];
 
         // Check whether the vesting period is passed or not
-        uint vestingPeriod = stakeData.startTimeOfStaking.add(VESTING_PERIOD);
-        //require (block.timestamp > vestingPeriod, "It has not passed the vesting period");
+        require (block.timestamp > VESTING_PERIOD, "It has not passed the vesting period");
 
         // Unstake
         uint unstakeAmount = stakeData.stakeAmount;
