@@ -7,7 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "truffle test ./test/test-local/rock3t/* --network development",
+    "test:LiquidVaultWithVesting": "truffle test ./test/test-local/LiquidVaultWithVesting.test.js --network development",
+    "test:rock3t": "truffle test ./test/test-local/rock3t/* --network development",
     "compile": "truffle compile --network development",
     "ganache": "ganache-cli -e 12000 -g 200000000000",
     "deploy:kovan": "npm run compile && truffle migrate --network kovan"

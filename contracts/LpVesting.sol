@@ -20,8 +20,8 @@ contract LpVesting {
     uint public DEFAULT_VESTING_PERIOD = 24 weeks;  // Default vesting period is 6 months
     //uint public REWARD_TOKEN_AMOUNT_TO_BE_SUPPLED = 1e6 * 1e18;  // Reward tokens amount to be supplied is 6000000
 
-    uint public totalStakingAmount;               // amount
-    uint public totalRewardAmount = 1e6 * 1e18;   // Reward tokens amount to be supplied is 6000000
+    uint public totalStakedAmount;               // amount
+    uint public totalRewardAmount;
     uint public lastUpdated;
 
     struct StakeData {
@@ -43,6 +43,9 @@ contract LpVesting {
     function depositRewardToken(uint depositAmount) public returns (bool) {
         address projectOwner = msg.sender;
         dgvc.transferFrom(projectOwner, address(this), depositAmount);
+
+        // Set total reward amount
+        totalRewardAmount = depositAmount;
     }
 
     function setVestingPeriod() public returns (bool) {
@@ -73,28 +76,30 @@ contract LpVesting {
         stakeData.startTimeOfStaking = block.timestamp;
 
         // Update total staking amount
-        totalStakingAmount.add(_stakeAmount);
+        totalStakedAmount += _stakeAmount;
     }
 
     /**
      * @notice - Unstake LP tokens. (Only after vesting period is passed, unstaking is able to execute)
      */
     function unstake(IUniswapV2Pair lpToken) public returns (bool) {
-        require (block.timestamp < VESTING_PERIOD, "It has not passed the vesting period");
-
         address staker = msg.sender;
         StakeData memory stakeData = stakeDatas[staker];
+
+        // Check whether the vesting period is passed or not
+        uint vestingPeriod = stakeData.startTimeOfStaking.add(VESTING_PERIOD);
+        //require (block.timestamp > vestingPeriod, "It has not passed the vesting period");
 
         // Unstake
         uint unstakeAmount = stakeData.stakeAmount;
         lpToken.transfer(staker, unstakeAmount);
 
-        // Update total staking amount
-        totalStakingAmount.sub(unstakeAmount);
-
         // Distribute reward tokens
         uint _startTimeOfStaking = stakeData.startTimeOfStaking;
         claimRewards(staker, _startTimeOfStaking);
+
+        // Update total staking amount (Note: This should be executed in final raw of this method)
+        totalStakedAmount -= unstakeAmount;
     }
 
     /**
@@ -102,33 +107,63 @@ contract LpVesting {
      * @notice - Vesting period is same for all stakers
      */
     function claimRewards(address receiver, uint startTimeOfStaking) public returns (bool) {
-        // [Formula of reward]: Total reward amount * Share of staked LPs * staked-seconds
+        // [Formula of reward]: Reward amount (per second) * Total staking time (second) * Share of staked-LPs (%) 
         uint rewardAmountPerSecond = getRewardAmountPerSecond();
-        uint totalStakingTime = block.timestamp.sub(startTimeOfStaking);
+
+        uint currentTime = getCurrentTimestamp();
+        uint totalStakingTime = currentTime.sub(startTimeOfStaking);   // Original
+
         uint stakingShare = getStakingShare(receiver);
-        uint distributedRewardAmount = rewardAmountPerSecond.mul(startTimeOfStaking).mul(stakingShare).div(100);
+        uint distributedRewardAmount = rewardAmountPerSecond.mul(totalStakingTime).mul(stakingShare).div(100);
+        //uint distributedRewardAmount = getDistributedRewardAmount(receiver, startTimeOfStaking);
 
         // Distribute reward tokens (DGVC tokens)
         dgvc.transfer(receiver, distributedRewardAmount);
     }
     
 
-    //-----------
-    // Getter
-    //-----------
+    //--------------------
+    // Getter methods
+    //--------------------
+    function getCurrentTimestamp() public view returns (uint _currentTimestamp) {
+        return block.timestamp;
+    }
+
     function getVestingPeriod() public view returns (uint _vestingPeriod) {
         return VESTING_PERIOD;
     }
 
     function getStakingShare(address staker) public view returns (uint _stakingShare) {
-        StakeData memory stakeData = stakeDatas[staker];
+        StakeData memory stakeData = getStakeData(staker);
         uint stakedAmount = stakeData.stakeAmount;
-        uint stakingShare = stakedAmount.mul(100).div(totalStakingAmount);
+        uint stakingShare = stakedAmount.mul(100).div(totalStakedAmount);     // Original
         return stakingShare; // Unit is percentage (%)
     }
 
     function getRewardAmountPerSecond() public view returns (uint _rewardAmountPerSecond) {
         return totalRewardAmount.div(VESTING_PERIOD);  // Reward amount per second
     }
+
+    function getStakeData(address staker) public view returns (StakeData memory _stakeData) {
+        StakeData memory stakeData = stakeDatas[staker];
+        return stakeData;
+    }
+
+    function getStartTimeOfStaking(address staker) public view returns (uint _startTimeOfStaking) {
+        StakeData memory stakeData = stakeDatas[staker];
+        uint startTimeOfStaking = stakeData.startTimeOfStaking;
+        return startTimeOfStaking; // Unit is second
+    }
+
+    function getDistributedRewardAmount(address receiver, uint startTimeOfStaking) public view returns (uint _distributedRewardAmount) {
+        // [Formula of reward]: Total reward amount * Share of staked-LPs (%) * Total staking time (seconds)
+        uint rewardAmountPerSecond = getRewardAmountPerSecond();
+        uint totalStakingTime = block.timestamp.sub(startTimeOfStaking);
+        uint stakingShare = getStakingShare(receiver);
+        uint distributedRewardAmount = rewardAmountPerSecond.mul(totalStakingTime).mul(stakingShare).div(100);
+
+        return distributedRewardAmount;
+    }
+    
     
 }

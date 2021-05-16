@@ -1,3 +1,12 @@
+- Test
+```
+npm run test:LiquidVaultWithVesting
+```
+
+<br>
+
+<hr>
+
 # rock3t-core-contracts
 ROCK3T (R3T) is an ERC20 token with changeable FOT with total fixed supply of 11,000,000.
 
@@ -18,5 +27,5 @@ npm run ganache
 ```
 2. Run the tests:
 ```
-npm run test
+npm run test:rock3t
 ```
