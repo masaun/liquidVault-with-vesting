@@ -32,9 +32,15 @@
 
 - Diagram of workflow
 
-
-
 &nbsp;
+
+***
+
+## 【Demo Video】
+- https://youtu.be/94P_t9BVC_s
+
+<br>
+
 
 ***
 
@@ -79,10 +85,13 @@ npm run test:LiquidVaultWithVesting
 ***
 
 ## 【References】
-- Degen.VC
+- Degen.VC  
   - Website: https://www.degen.vc/
   - Github: https://github.com/degen-vc
+  - rock3t-core-contracts: https://github.com/degen-vc/rock3t-core-contracts
 
 <br>
 
-- rock3t-core-contracts: https://github.com/degen-vc/rock3t-core-contracts
+- Liquid Vault Gitcoin Hackathon Prizes  
+  - Best new implementation of a Liquid Vault   
+    https://gitcoin.co/issue/degen-vc/liquid-vault/1/100025592
