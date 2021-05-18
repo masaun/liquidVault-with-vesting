@@ -22,15 +22,18 @@
 
 ## 【Workflow】
 - Workflow: 
-  - ① The main contracts are LiquidVault (LiquidVaulWithVesting.sol) for sending ETH and pooling it with R3T to create LP tokens, FeeApprover that calculates FOT, FeeDistributor that distributes fees on LiquidVault. 
-  - ② LiquidVault allows users to send ETH and pool it with R3T, while certain percentage of fee that is calculated using buy pressure formula is swapped on Uniswap market. 
-  - ③ Minted LP tokens are locked in LiquidVault for a period that is calculated based on the system health.
-  - ④ Staking LP (= `LP vesting` )
-  - ⑤ After vesting period is passed, a user can withdraw and receive reward tokens (=DGVC tokens)
+  - ① A user sending ETH into the `LiquidVault (LiquidVaulWithVesting.sol)` and pooling it with R3T to create LP tokens, FeeApprover that calculates FOT, FeeDistributor that distributes fees on LiquidVault. 
+  - ② LiquidVault allows users to send ETH and pool it with R3T, while certain percentage of fee that is calculated using buy pressure formula is swapped on Uniswap market. Minted LP tokens are locked in LiquidVault for a period that is calculated based on the system health.
+    ③ A user claim LP tokens and receive them.
+    ④ At the same time, certain percentage of LP tokens is donated.
+  - ⑤ A user stake LP tokens (= `Vesting of LP tokens` . Default vesting period is 24 weeks)
+  - ⑥ After vesting period is passed, a user can withdraw and receive `reward tokens` (= `DGVC tokens` )
 
 <br>
 
-- Diagram of workflow
+- Diagram of workflow 
+![【Diagram】Liquid Vault with Vesting](https://user-images.githubusercontent.com/19357502/118573058-c1e9ed00-b7bc-11eb-9097-c31ba17eea1a.jpg)
+
 
 &nbsp;
 
@@ -88,7 +91,12 @@ npm run test:LiquidVaultWithVesting
 - Degen.VC  
   - Website: https://www.degen.vc/
   - Github: https://github.com/degen-vc
-  - rock3t-core-contracts: https://github.com/degen-vc/rock3t-core-contracts
+
+<br>
+
+- Rock3T
+  - rock3t-core-contracts: https://github.com/degen-vc/rock3t-core-contracts  
+  - Structure: https://medium.com/rock3t/breaking-down-rock3ts-economic-levers-1dd32b04e9e1
 
 <br>
 
